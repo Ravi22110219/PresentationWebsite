@@ -568,27 +568,7 @@ export default function Presentation({ slides = [], slideCount }) {
       <style>{styles}</style>
       <div className="pres-root">
 
-        {/* Header */}
-        <div className={`pres-header ${!showUI ? "pres-header-hidden" : ""}`}>
-          <div className="pres-brand-row">
-            <div className="pres-brand">AIResQ ClimSols</div>
-            <div className="pres-slide-title">
-              {slide?.title || `slide ${current + 1}`}
-            </div>
-          </div>
-          <div className="pres-meta">
-            <span className="pres-counter">{current + 1} / {total}</span>
-            <button
-              className="pres-exit-btn"
-              onClick={() => {
-                setStarted(false);
-                exitFullscreen();
-              }}
-            >
-              ✕ exit
-            </button>
-          </div>
-        </div>
+        {/* header removed; exit and counter moved into footer */}
 
         {/* Stage */}
         <div className="pres-stage">
@@ -610,13 +590,27 @@ export default function Presentation({ slides = [], slideCount }) {
           </div>
 
           <div className="pres-nav-row">
-            <button
-              className="pres-nav-btn"
-              onClick={() => navigate(-1)}
-              disabled={current === 0}
-            >
-              ← prev
-            </button>
+            <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+              <button
+                className="pres-exit-btn"
+                onClick={() => {
+                  setStarted(false);
+                  exitFullscreen();
+                }}
+              >
+                ✕ exit
+              </button>
+
+              <button
+                className="pres-nav-btn"
+                onClick={() => navigate(-1)}
+                disabled={current === 0}
+              >
+                ← prev
+              </button>
+
+              <span className="pres-counter" style={{ marginLeft: 8 }}>{current + 1} / {total}</span>
+            </div>
 
             <div className="pres-dots">
               {visibleSlides.map((_, i) => (
@@ -633,13 +627,15 @@ export default function Presentation({ slides = [], slideCount }) {
               ))}
             </div>
 
-            <button
-              className="pres-nav-btn"
-              onClick={() => navigate(1)}
-              disabled={current === total - 1}
-            >
-              next →
-            </button>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <button
+                className="pres-nav-btn"
+                onClick={() => navigate(1)}
+                disabled={current === total - 1}
+              >
+                next →
+              </button>
+            </div>
           </div>
         </div>
 
