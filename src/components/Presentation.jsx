@@ -1,0 +1,649 @@
+import { useState, useEffect, useCallback, useRef } from "react";
+import startLogo from "../img/start_logo.png";
+
+/**
+ * Presentation Component
+ *
+ * Props:
+ *   slides      — array of slide objects (from your JSON file)
+ *   slideCount  — number of slides to show (slices the array)
+ *
+ * Slide object shape:
+ * {
+ *   "title": "My Slide",
+ *   "type": "image" | "iframe" | "video",
+ *   "url": "https://..."
+ * }
+ *
+ * Usage example:
+ *   import slidesData from "./slides.json";
+ *   <Presentation slides={slidesData} slideCount={5} />
+ */
+
+const styles = `
+  @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Roboto:wght@400;500;700&display=swap');
+
+  .pres-root {
+    --bg0: #081f26;
+    --bg1: #114754;
+    --bg2: #163740;
+    --bg3: #1b4c59;
+    --border: rgba(107,195,210,0.2);
+    --border-hover: rgba(107,195,210,0.35);
+    --accent: #6BC3D2;
+    --accent-dim: rgba(107,195,210,0.16);
+    --text: #eef8fa;
+    --text2: #b1dee2;
+    --text3: #7caab5;
+    --radius: 10px;
+    --ease: cubic-bezier(0.4, 0, 0.2, 1);
+    font-family: 'Roboto', 'Poppins', sans-serif;
+    background: var(--bg0);
+    color: var(--text);
+    position: fixed;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    width: 100%;
+    height: 100%;
+  }
+
+  /* ── HEADER ── */
+  .pres-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 28px;
+    background: var(--bg1);
+    border-bottom: 0.5px solid var(--border);
+    flex-shrink: 0;
+    gap: 16px;
+    transition: opacity 0.25s var(--ease), transform 0.25s var(--ease);
+  }
+  .pres-brand-row {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+    flex: 1;
+  }
+  .pres-brand {
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-family: 'Poppins', sans-serif;
+    font-weight: 700;
+  }
+  .pres-slide-title {
+    font-family: 'Roboto', sans-serif;
+    font-size: 20px;
+    font-weight: 500;
+    color: var(--text);
+    letter-spacing: 0.01em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .pres-meta {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-shrink: 0;
+  }
+  .pres-counter {
+    font-size: 11px;
+    color: var(--text2);
+    letter-spacing: 0.1em;
+  }
+  .pres-type-badge {
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    padding: 3px 9px;
+    border-radius: 4px;
+    background: var(--accent-dim);
+    color: var(--accent);
+    border: 0.5px solid rgba(212,168,67,0.3);
+    text-transform: uppercase;
+  }
+  .pres-exit-btn {
+    background: transparent;
+    border: 0.5px solid var(--border);
+    border-radius: 6px;
+    color: var(--text2);
+    padding: 5px 14px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    cursor: pointer;
+    letter-spacing: 0.06em;
+    transition: border-color 0.2s, color 0.2s;
+  }
+  .pres-exit-btn:hover { border-color: var(--border-hover); color: var(--text); }
+
+  /* ── STAGE ── */
+  .pres-stage {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #0b2e36;
+    position: relative;
+    overflow: hidden;
+    min-height: 0;
+  }
+  .pres-stage img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    display: block;
+  }
+  .pres-stage video,
+  .pres-stage iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+    background: #082026;
+    display: block;
+    object-fit: contain;
+  }
+  .pres-empty {
+    font-size: 12px;
+    color: var(--text3);
+    letter-spacing: 0.08em;
+    text-align: center;
+  }
+
+  /* slide fade transition */
+  .slide-enter { animation: slideIn 0.3s var(--ease) forwards; }
+  .slide-exit { animation: slideOut 0.2s var(--ease) forwards; }
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateX(16px); }
+    to   { opacity: 1; transform: translateX(0); }
+  }
+  @keyframes slideOut {
+    from { opacity: 1; }
+    to   { opacity: 0; }
+  }
+
+  /* slide label overlay */
+  .pres-label-overlay {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    background: linear-gradient(transparent, rgba(15, 71, 90, 0.92));
+    padding: 60px 28px 20px;
+    pointer-events: none;
+    transition: opacity 0.25s var(--ease), transform 0.25s var(--ease);
+  }
+  .pres-label-hidden {
+    opacity: 0;
+    transform: translateY(8px);
+    pointer-events: none;
+  }
+  .pres-label-text {
+    font-family: 'Roboto', sans-serif;
+    font-size: 22px;
+    font-weight: 500;
+    color: rgba(238,248,250,0.95);
+    letter-spacing: 0.02em;
+  }
+
+  /* ── PROGRESS FOOTER ── */
+  .pres-footer {
+    flex-shrink: 0;
+    background: var(--bg1);
+    border-top: 0.5px solid var(--border);
+    padding: 12px 28px 14px;
+    transition: opacity 0.25s var(--ease), transform 0.25s var(--ease), max-height 0.25s var(--ease), padding 0.25s var(--ease);
+  }
+  .pres-header-hidden {
+    opacity: 0;
+    transform: translateY(-12px);
+    pointer-events: none;
+    max-height: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    border-bottom-color: transparent;
+  }
+  .pres-footer-hidden {
+    opacity: 0;
+    transform: translateY(12px);
+    pointer-events: none;
+    max-height: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    border-top-color: transparent;
+  }
+  .pres-progress-track {
+    height: 2px;
+    background: var(--bg3);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-bottom: 12px;
+  }
+  .pres-progress-fill {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 2px;
+    transition: width 0.45s var(--ease);
+  }
+  .pres-nav-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .pres-dots {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    justify-content: center;
+    flex: 1;
+  }
+  .pres-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--bg3);
+    border: 0.5px solid var(--border);
+    cursor: pointer;
+    transition: all 0.2s var(--ease);
+    padding: 0;
+    outline: none;
+  }
+  .pres-dot:hover { background: var(--text3); border-color: var(--border-hover); }
+  .pres-dot.visited { background: var(--text3); border-color: var(--text3); }
+  .pres-dot.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    transform: scale(1.5);
+    box-shadow: 0 0 6px rgba(212,168,67,0.5);
+  }
+  .pres-nav-btn {
+    background: transparent;
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text2);
+    padding: 7px 20px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    cursor: pointer;
+    letter-spacing: 0.08em;
+    transition: border-color 0.2s, color 0.2s, background 0.2s;
+    white-space: nowrap;
+  }
+  .pres-nav-btn:hover:not(:disabled) {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: var(--accent-dim);
+  }
+  .pres-nav-btn:disabled { opacity: 0.25; cursor: default; }
+
+  /* ── SETUP SCREEN ── */
+  .pres-setup {
+    background: var(--bg0);
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .pres-setup-card {
+    background: rgba(15, 71, 90, 0.94);
+    border: 0.5px solid rgba(107,195,210,0.18);
+    border-radius: 18px;
+    padding: 40px 48px;
+    max-width: 460px;
+    width: 100%;
+    text-align: center;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.22);
+  }
+  .pres-start-logo {
+    display: block;
+    margin: 0 auto 22px;
+    max-width: 180px;
+    width: 100%;
+    height: auto;
+    filter: drop-shadow(0 8px 16px rgba(0,0,0,0.22));
+  }
+  .pres-setup-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 32px;
+    font-style: italic;
+    color: var(--accent);
+    margin-bottom: 8px;
+    letter-spacing: 0.02em;
+  }
+  .pres-setup-sub {
+    font-size: 11px;
+    color: var(--text2);
+    letter-spacing: 0.1em;
+    margin-bottom: 32px;
+  }
+  .pres-setup-info {
+    background: var(--bg2);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px 20px;
+    text-align: left;
+    margin-bottom: 28px;
+  }
+  .pres-setup-info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+    padding: 4px 0;
+    border-bottom: 0.5px solid var(--border);
+  }
+  .pres-setup-info-row:last-child { border-bottom: none; }
+  .pres-setup-info-label { color: var(--text2); letter-spacing: 0.06em; }
+  .pres-setup-info-val { color: var(--text); font-weight: 500; }
+  .pres-start-btn {
+    width: 100%;
+    background: var(--accent);
+    color: #082026;
+    border: none;
+    border-radius: var(--radius);
+    padding: 13px 24px;
+    font-family: 'Poppins', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    cursor: pointer;
+    transition: opacity 0.2s;
+  }
+  .pres-start-btn:hover { opacity: 0.88; }
+  .pres-start-btn:disabled { opacity: 0.35; cursor: default; }
+  .pres-error {
+    font-size: 11px;
+    color: #e05252;
+    margin-top: 12px;
+    letter-spacing: 0.05em;
+  }
+  .pres-hint {
+    font-size: 10px;
+    color: var(--text3);
+    margin-top: 16px;
+    letter-spacing: 0.06em;
+    line-height: 1.7;
+  }
+`;
+
+function SlideContent({ slide, animKey }) {
+  if (!slide.url) {
+    return (
+      <div className="pres-empty">
+        no url provided for this slide
+      </div>
+    );
+  }
+
+  if (slide.type === "image") {
+    return (
+      <img
+        key={animKey}
+        className="slide-enter"
+        src={slide.url}
+        alt={slide.title || "slide"}
+        loading="lazy"
+      />
+    );
+  }
+
+  if (slide.type === "video") {
+    return (
+      <video
+        key={animKey}
+        className="slide-enter"
+        src={slide.url}
+        controls
+        playsInline
+      />
+    );
+  }
+
+  return (
+    <iframe
+      key={animKey}
+      className="slide-enter"
+      src={slide.url}
+      title={slide.title || "slide"}
+      allowFullScreen
+      sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-presentation"
+    />
+  );
+}
+
+export default function Presentation({ slides = [], slideCount }) {
+  const visibleSlides = slides.slice(0, slideCount ?? slides.length);
+  const total = visibleSlides.length;
+
+  const [started, setStarted] = useState(false);
+  const [current, setCurrent] = useState(0);
+  const [animKey, setAnimKey] = useState(0);
+  const [showUI, setShowUI] = useState(true);
+  const uiTimerRef = useRef(null);
+
+  const resetUITimer = useCallback(() => {
+    setShowUI(true);
+    if (uiTimerRef.current) {
+      window.clearTimeout(uiTimerRef.current);
+    }
+    uiTimerRef.current = window.setTimeout(() => {
+      setShowUI(false);
+    }, 3000);
+  }, []);
+
+  const enterFullscreen = useCallback(() => {
+    const el = document.documentElement;
+    if (el.requestFullscreen) {
+      el.requestFullscreen().catch(() => {});
+    } else if (el.webkitRequestFullscreen) {
+      el.webkitRequestFullscreen();
+    }
+  }, []);
+
+  const exitFullscreen = useCallback(() => {
+    if (document.fullscreenElement || document.webkitFullscreenElement) {
+      if (document.exitFullscreen) {
+        document.exitFullscreen().catch(() => {});
+      } else if (document.webkitExitFullscreen) {
+        document.webkitExitFullscreen();
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    if (started) {
+      enterFullscreen();
+    } else {
+      exitFullscreen();
+    }
+  }, [started, enterFullscreen, exitFullscreen]);
+
+  const goTo = useCallback((i) => {
+    if (i < 0 || i >= total) return;
+    setCurrent(i);
+    setAnimKey((k) => k + 1);
+  }, [total]);
+
+  const navigate = useCallback((dir) => goTo(current + dir), [current, goTo]);
+
+  useEffect(() => {
+    if (!started) {
+      setShowUI(true);
+      if (uiTimerRef.current) {
+        window.clearTimeout(uiTimerRef.current);
+      }
+      return;
+    }
+
+    resetUITimer();
+  }, [started, current, resetUITimer]);
+
+  useEffect(() => {
+    if (!started) return;
+
+    const handler = (e) => {
+      resetUITimer();
+      if (e.key === "ArrowRight" || e.key === "ArrowDown") navigate(1);
+      if (e.key === "ArrowLeft"  || e.key === "ArrowUp")   navigate(-1);
+      if (e.key === "Escape") setStarted(false);
+    };
+    const mouseMoveHandler = () => resetUITimer();
+
+    window.addEventListener("keydown", handler);
+    window.addEventListener("mousemove", mouseMoveHandler);
+    return () => {
+      window.removeEventListener("keydown", handler);
+      window.removeEventListener("mousemove", mouseMoveHandler);
+    };
+  }, [started, navigate, resetUITimer]);
+
+  const progress = total > 1 ? (current / (total - 1)) * 100 : 100;
+  const slide = visibleSlides[current];
+
+  const hasError = total === 0;
+
+  // ── SETUP SCREEN ──
+  if (!started) {
+    return (
+      <>
+        <style>{styles}</style>
+        <div className="pres-root">
+          <div className="pres-setup">
+            <div className="pres-setup-card">
+              <img src={startLogo} alt="AIResQ ClimSols" className="pres-start-logo" />
+              <div className="pres-setup-title">AIResQ ClimSols</div>
+              <div className="pres-setup-sub">climate solutions presentation</div>
+
+              <div className="pres-setup-info">
+                <div className="pres-setup-info-row">
+                  <span className="pres-setup-info-label">slides loaded</span>
+                  <span className="pres-setup-info-val">{total}</span>
+                </div>
+                <div className="pres-setup-info-row">
+                  <span className="pres-setup-info-label">images</span>
+                  <span className="pres-setup-info-val">
+                    {visibleSlides.filter(s => s.type === "image").length}
+                  </span>
+                </div>
+                <div className="pres-setup-info-row">
+                  <span className="pres-setup-info-label">iframes</span>
+                  <span className="pres-setup-info-val">
+                    {visibleSlides.filter(s => s.type === "iframe").length}
+                  </span>
+                </div>
+              </div>
+
+              {hasError && (
+                <div className="pres-error">
+                  no slides found — check your JSON and slideCount prop
+                </div>
+              )}
+
+              <button
+                className="pres-start-btn"
+                onClick={() => {
+                  setStarted(true);
+                  enterFullscreen();
+                }}
+                disabled={hasError}
+              >
+                ▶ &nbsp;begin presentation
+              </button>
+
+              <div className="pres-hint">
+                ← → arrow keys to navigate &nbsp;·&nbsp; esc to return here
+              </div>
+            </div>
+          </div>
+        </div>
+      </>
+    );
+  }
+
+  // ── PRESENTATION SCREEN ──
+  return (
+    <>
+      <style>{styles}</style>
+      <div className="pres-root">
+
+        {/* Header */}
+        <div className={`pres-header ${!showUI ? "pres-header-hidden" : ""}`}>
+          <div className="pres-brand-row">
+            <div className="pres-brand">AIResQ ClimSols</div>
+            <div className="pres-slide-title">
+              {slide?.title || `slide ${current + 1}`}
+            </div>
+          </div>
+          <div className="pres-meta">
+            <span className="pres-counter">{current + 1} / {total}</span>
+            <button
+              className="pres-exit-btn"
+              onClick={() => {
+                setStarted(false);
+                exitFullscreen();
+              }}
+            >
+              ✕ exit
+            </button>
+          </div>
+        </div>
+
+        {/* Stage */}
+        <div className="pres-stage">
+          <SlideContent slide={slide} animKey={animKey} />
+          {slide?.title && (
+            <div className={`pres-label-overlay ${!showUI ? "pres-label-hidden" : ""}`}>
+              <div className="pres-label-text">{slide.title}</div>
+            </div>
+          )}
+        </div>
+
+        {/* Footer */}
+        <div className={`pres-footer ${!showUI ? "pres-footer-hidden" : ""}`}>
+          <div className="pres-progress-track">
+            <div
+              className="pres-progress-fill"
+              style={{ width: `${progress}%` }}
+            />
+          </div>
+
+          <div className="pres-nav-row">
+            <button
+              className="pres-nav-btn"
+              onClick={() => navigate(-1)}
+              disabled={current === 0}
+            >
+              ← prev
+            </button>
+
+            <div className="pres-dots">
+              {visibleSlides.map((_, i) => (
+                <button
+                  key={i}
+                  className={[
+                    "pres-dot",
+                    i === current ? "active" : "",
+                    i < current ? "visited" : "",
+                  ].join(" ")}
+                  onClick={() => goTo(i)}
+                  aria-label={`go to slide ${i + 1}`}
+                />
+              ))}
+            </div>
+
+            <button
+              className="pres-nav-btn"
+              onClick={() => navigate(1)}
+              disabled={current === total - 1}
+            >
+              next →
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </>
+  );
+}
