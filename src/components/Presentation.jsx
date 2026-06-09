@@ -453,7 +453,7 @@ export default function Presentation({ slides = [], slideCount }) {
   const [started, setStarted] = useState(false);
   const [current, setCurrent] = useState(0);
   const [animKey, setAnimKey] = useState(0);
-  const [showUI, setShowUI] = useState(true);
+  const [, setShowUI] = useState(true);
   const uiTimerRef = useRef(null);
 
   const resetUITimer = useCallback(() => {
