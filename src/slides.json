@@ -1,8 +1,8 @@
 [
   { "title": "Introduction", "type": "image",  "url": "img/ARC/1.png" },
-  { "title": "Problem", "type": "image",  "url": "https://www.iiba.org/contentassets/cebab4bccae249ce91a0140b8630e991/why-solving-the-wrong-problem-can-be-costly-header.jpg" },
-  { "title": "Missing Pieces & How we fit?",    "type": "image", "url": "img/ARC/2.png" },
-  { "title": "Input Data", "type": "image",  "url": "img/ARC/3.png" },
+  { "title": "Problem", "type": "image",  "url": "img/ARC/Problem.png" },
+  { "title": "R2R", "type": "image",  "url": "img/ARC/2.png" },
+  { "title": "Input", "type": "image",  "url": "img/ARC/3.png" },
   { "title": "Output", "type": "image",  "url": "img/ARC/5.png" },
   { "title": "Demo 1: Gurugram", "type": "image",  "url": "img/ARC/6.png" },
   { "title": "Demo 1: Gurugram - FloodAstra", "type": "iframe",  "url": "https://gurugram.airesqclimsols.com/MCG_Flood_DSS_FINAL_WORKING.html#overview" },
@@ -11,6 +11,9 @@
   { "title": "Demo 4: Cricket", "type": "video",  "url": "video/AIPLaY_Cricket_Time_to_Play_Animation.mp4" },
   { "title": "Demo 5: Tennis", "type": "video",  "url": "video/AIPlay-3.mp4" },
   { "title": "Demo 6: MobiResQ", "type": "iframe",  "url": "https://mobility.airesqclimsols.com/" },
-  { "title": "Demo 7: Photo Gallery", "type": "image",  "url": "https://example.com/arch.png" },
-  { "title": "Demo 8: AIResQ Video", "type": "iframe",  "url": "https://www.youtube.com/embed/u31qwQUeGuM?si=LV43kU28CgIbKb_x" }
+  { "title": "Demo 7: FloodTwin", "type": "iframe",  "url": "https://floodtwin.airesqclimsols.com/" },
+  { "title": "Research", "type": "image",  "url": "img/ARC/Research1.png" },
+  { "title": "Research", "type": "image",  "url": "img/ARC/Research2.png" },
+  { "title": "Research", "type": "image",  "url": "img/ARC/Research3.png" },
+  { "title": "Demo 8: AIResQ Video", "type": "iframe",  "url": "https://www.youtube.com/embed/H2JbteLAtqQ" }
 ]

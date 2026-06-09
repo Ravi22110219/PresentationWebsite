@@ -186,15 +186,15 @@ const styles = `
   }
 
   /* slide fade transition */
-  .slide-enter { animation: slideIn 0.3s var(--ease) forwards; }
-  .slide-exit { animation: slideOut 0.2s var(--ease) forwards; }
+  .slide-enter { animation: slideIn 0.5s var(--ease) forwards; }
+  .slide-exit { animation: slideOut 0.3s var(--ease) forwards; }
   @keyframes slideIn {
-    from { opacity: 0; transform: translateX(16px); }
+    from { opacity: 0; transform: translateX(60px); }
     to   { opacity: 1; transform: translateX(0); }
   }
   @keyframes slideOut {
-    from { opacity: 1; }
-    to   { opacity: 0; }
+    from { opacity: 1; transform: translateX(0); }
+    to   { opacity: 0; transform: translateX(-60px); }
   }
 
   /* slide label overlay */
@@ -224,7 +224,7 @@ const styles = `
     flex-shrink: 0;
     background: var(--bg1);
     border-top: 0.5px solid var(--border);
-    padding: 12px 28px 14px;
+    padding: 6px 16px 8px;
     transition: opacity 0.25s var(--ease), transform 0.25s var(--ease), max-height 0.25s var(--ease), padding 0.25s var(--ease);
   }
   .pres-header-hidden {
@@ -250,7 +250,7 @@ const styles = `
     background: var(--bg3);
     border-radius: 2px;
     overflow: hidden;
-    margin-bottom: 12px;
+    margin-bottom: 6px;
   }
   .pres-progress-fill {
     height: 100%;
@@ -262,7 +262,7 @@ const styles = `
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 12px;
+    gap: 8px;
   }
   .pres-dots {
     display: flex;
@@ -294,9 +294,9 @@ const styles = `
     border: 0.5px solid var(--border);
     border-radius: var(--radius);
     color: var(--text2);
-    padding: 7px 20px;
+    padding: 4px 14px;
     font-family: 'JetBrains Mono', monospace;
-    font-size: 11px;
+    font-size: 10px;
     cursor: pointer;
     letter-spacing: 0.08em;
     transition: border-color 0.2s, color 0.2s, background 0.2s;
@@ -636,6 +636,7 @@ export default function Presentation({ slides = [], slideCount }) {
               </button>
 
               <div className="pres-hint">
+                Press F11 to enter full screen before starting.<br />
                 ← → arrow keys to navigate &nbsp;·&nbsp; esc to return here
               </div>
             </div>
@@ -656,15 +657,10 @@ export default function Presentation({ slides = [], slideCount }) {
         {/* Stage */}
         <div className="pres-stage">
           <SlideContent slide={slide} animKey={animKey} />
-          {slide?.title && (
-            <div className={`pres-label-overlay ${!showUI ? "pres-label-hidden" : ""}`}>
-              <div className="pres-label-text">{slide.title}</div>
-            </div>
-          )}
         </div>
 
         {/* Footer */}
-        <div className={`pres-footer ${!showUI ? "pres-footer-hidden" : ""}`}>
+        <div className="pres-footer">
           <div className="pres-progress-track">
             <div
               className="pres-progress-fill"
