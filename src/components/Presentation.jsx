@@ -10,11 +10,24 @@ function importLocalSlideImages(r) {
 
 importLocalSlideImages(require.context("../img", true, /\.(png|jpe?g|svg)$/));
 
+const localVideoAssets = {};
+function importLocalVideoFiles(r) {
+  r.keys().forEach((key) => {
+    localVideoAssets[key.replace("./", "")] = r(key);
+  });
+}
+
+importLocalVideoFiles(require.context("../video", true, /\.(mp4|webm)$/));
+
 function resolveSlideUrl(url) {
   if (!url) return url;
   if (url.startsWith("img/")) {
     const key = url.replace(/^img\//, "");
     return localSlideImages[key] || url;
+  }
+  if (url.startsWith("video/")) {
+    const key = url.replace(/^video\//, "");
+    return localVideoAssets[key] || url;
   }
   return url;
 }
@@ -505,9 +518,28 @@ export default function Presentation({ slides = [], slideCount }) {
 
     const handler = (e) => {
       resetUITimer();
-      if (e.key === "ArrowRight" || e.key === "ArrowDown") navigate(1);
-      if (e.key === "ArrowLeft"  || e.key === "ArrowUp")   navigate(-1);
-      if (e.key === "Escape") setStarted(false);
+
+      // navigation
+      if (e.key === "ArrowRight" || e.key === "ArrowDown") return navigate(1);
+      if (e.key === "ArrowLeft"  || e.key === "ArrowUp")   return navigate(-1);
+      if (e.key === "Escape") return setStarted(false);
+
+      // toggle play/pause for video slides on Space
+      if (e.code === "Space" || e.key === " ") {
+        const vid = document.querySelector('.pres-stage video');
+        // nothing to do if there's no video
+        if (!vid) return;
+        // if the video element is focused, let the browser handle Space
+        if (document.activeElement === vid) return;
+        // prevent page scrolling and other handlers
+        e.preventDefault();
+        e.stopPropagation();
+        if (vid.paused) {
+          vid.play().catch(() => {});
+        } else {
+          vid.pause();
+        }
+      }
     };
     const mouseMoveHandler = () => resetUITimer();
 
@@ -518,6 +550,37 @@ export default function Presentation({ slides = [], slideCount }) {
       window.removeEventListener("mousemove", mouseMoveHandler);
     };
   }, [started, navigate, resetUITimer]);
+
+  // Auto-play video when its slide becomes active (muted to satisfy autoplay policies)
+  useEffect(() => {
+    if (!started) {
+      // pause any playing videos when presentation isn't started
+      document.querySelectorAll('.pres-stage video').forEach(v => v.pause());
+      return;
+    }
+
+    const playCurrentVideo = async () => {
+      const vid = document.querySelector('.pres-stage video');
+      if (!vid) {
+        // no video on this slide, pause any residual videos
+        document.querySelectorAll('.pres-stage video').forEach(v => v.pause());
+        return;
+      }
+
+      // pause other videos if present
+      document.querySelectorAll('.pres-stage video').forEach(v => { if (v !== vid) v.pause(); });
+
+      // try autoplay muted (more likely to succeed); user can unmute via controls
+      try {
+        vid.muted = true;
+        await vid.play();
+      } catch (err) {
+        // autoplay blocked — ignore silently
+      }
+    };
+
+    playCurrentVideo();
+  }, [started, current, animKey]);
 
   const progress = total > 1 ? (current / (total - 1)) * 100 : 100;
   const slide = visibleSlides[current];
