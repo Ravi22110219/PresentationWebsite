@@ -1,5 +1,6 @@
 [
-  { "title": "Problem", "type": "image",  "url": "https://img.magnific.com/free-photo/closeup-shot-beautiful-ginger-domestic-kitten-sitting-white-surface_181624-35913.jpg?semt=ais_hybrid&w=740&q=80" },
+  { "title": "Introduction", "type": "image",  "url": "img/ARC/1.png" },
+  { "title": "Problem", "type": "image",  "url": "img/ARC/2.png" },
   { "title": "Missing Pieces & How we fit?",    "type": "iframe", "url": "https://home.airesqclimsols.com/" },
   { "title": "R2R", "type": "image",  "url": "https://vastphotos.com/files/uploads/photos/10691/peaceful-water-landscape-photo-l.jpg?v=20220712043521" },
   { "title": "Output", "type": "image",  "url": "https://example.com/arch.png" },

@@ -1,6 +1,24 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import startLogo from "../img/start_logo.png";
 
+const localSlideImages = {};
+function importLocalSlideImages(r) {
+  r.keys().forEach((key) => {
+    localSlideImages[key.replace("./", "")] = r(key);
+  });
+}
+
+importLocalSlideImages(require.context("../img", true, /\.(png|jpe?g|svg)$/));
+
+function resolveSlideUrl(url) {
+  if (!url) return url;
+  if (url.startsWith("img/")) {
+    const key = url.replace(/^img\//, "");
+    return localSlideImages[key] || url;
+  }
+  return url;
+}
+
 /**
  * Presentation Component
  *
@@ -377,12 +395,14 @@ function SlideContent({ slide, animKey }) {
     );
   }
 
+  const resolvedUrl = resolveSlideUrl(slide.url);
+
   if (slide.type === "image") {
     return (
       <img
         key={animKey}
         className="slide-enter"
-        src={slide.url}
+        src={resolvedUrl}
         alt={slide.title || "slide"}
         loading="lazy"
       />
@@ -394,7 +414,7 @@ function SlideContent({ slide, animKey }) {
       <video
         key={animKey}
         className="slide-enter"
-        src={slide.url}
+        src={resolvedUrl}
         controls
         playsInline
       />
@@ -405,7 +425,7 @@ function SlideContent({ slide, animKey }) {
     <iframe
       key={animKey}
       className="slide-enter"
-      src={slide.url}
+      src={resolvedUrl}
       title={slide.title || "slide"}
       allowFullScreen
       sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-presentation"
@@ -430,7 +450,7 @@ export default function Presentation({ slides = [], slideCount }) {
     }
     uiTimerRef.current = window.setTimeout(() => {
       setShowUI(false);
-    }, 3000);
+    }, 1000);
   }, []);
 
   const enterFullscreen = useCallback(() => {
