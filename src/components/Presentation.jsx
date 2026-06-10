@@ -162,6 +162,7 @@ const styles = `
     position: relative;
     overflow: hidden;
     min-height: 0;
+    touch-action: pan-y;
   }
   .pres-stage img {
     max-width: 100%;
@@ -455,6 +456,7 @@ export default function Presentation({ slides = [], slideCount }) {
   const [animKey, setAnimKey] = useState(0);
   const [, setShowUI] = useState(true);
   const uiTimerRef = useRef(null);
+  const touchStartRef = useRef(null);
 
   const resetUITimer = useCallback(() => {
     setShowUI(true);
@@ -500,6 +502,43 @@ export default function Presentation({ slides = [], slideCount }) {
   }, [total]);
 
   const navigate = useCallback((dir) => goTo(current + dir), [current, goTo]);
+
+  const handleTouchStart = useCallback((e) => {
+    if (e.touches.length !== 1) return;
+    const touch = e.touches[0];
+    touchStartRef.current = { x: touch.clientX, y: touch.clientY };
+  }, []);
+
+  const handleTouchEnd = useCallback((e) => {
+    if (!touchStartRef.current || e.changedTouches.length === 0) return;
+    const touch = e.changedTouches[0];
+    const dx = touch.clientX - touchStartRef.current.x;
+    const dy = touch.clientY - touchStartRef.current.y;
+    if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy) * 1.5) {
+      if (dx < 0) navigate(1);
+      else navigate(-1);
+      resetUITimer();
+    }
+    touchStartRef.current = null;
+  }, [navigate, resetUITimer]);
+
+  const handlePointerDown = useCallback((e) => {
+    if (e.pointerType === "touch") {
+      touchStartRef.current = { x: e.clientX, y: e.clientY };
+    }
+  }, []);
+
+  const handlePointerUp = useCallback((e) => {
+    if (e.pointerType !== "touch" || !touchStartRef.current) return;
+    const dx = e.clientX - touchStartRef.current.x;
+    const dy = e.clientY - touchStartRef.current.y;
+    if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy) * 1.5) {
+      if (dx < 0) navigate(1);
+      else navigate(-1);
+      resetUITimer();
+    }
+    touchStartRef.current = null;
+  }, [navigate, resetUITimer]);
 
   useEffect(() => {
     if (!started) {
@@ -637,7 +676,7 @@ export default function Presentation({ slides = [], slideCount }) {
 
               <div className="pres-hint">
                 Press F11 to enter full screen before starting.<br />
-                ← → arrow keys to navigate &nbsp;·&nbsp; esc to return here
+                ← → arrow keys to navigate &nbsp;·&nbsp; swipe left/right on touch screens &nbsp;·&nbsp; esc to return here
               </div>
             </div>
           </div>
@@ -655,7 +694,13 @@ export default function Presentation({ slides = [], slideCount }) {
         {/* header removed; exit and counter moved into footer */}
 
         {/* Stage */}
-        <div className="pres-stage">
+        <div
+          className="pres-stage"
+          onPointerDown={handlePointerDown}
+          onPointerUp={handlePointerUp}
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
+        >
           <SlideContent slide={slide} animKey={animKey} />
         </div>
 
