@@ -8,7 +8,11 @@ function importLocalSlideImages(r) {
   });
 }
 
-importLocalSlideImages(require.context("../img", true, /\.(png|jpe?g|svg)$/));
+try {
+  importLocalSlideImages(require.context("../img", true, /\.(png|jpe?g|svg)$/));
+} catch (err) {
+  // Jest does not provide Webpack's require.context.
+}
 
 const localVideoAssets = {};
 function importLocalVideoFiles(r) {
@@ -17,7 +21,47 @@ function importLocalVideoFiles(r) {
   });
 }
 
-importLocalVideoFiles(require.context("../video", true, /\.(mp4|webm)$/));
+try {
+  importLocalVideoFiles(require.context("../video", true, /\.(mp4|webm)$/));
+} catch (err) {
+  // Jest does not provide Webpack's require.context.
+}
+
+const CROWD_APP_ORIGIN = "https://crowd.airesqclimsols.com";
+const SLIDE_HASH_PARAM = "slide";
+
+function isLocalHost(hostname) {
+  return hostname === "localhost" || hostname === "127.0.0.1" || hostname === "";
+}
+
+function getSlideIndexFromLocation(total) {
+  if (typeof window === "undefined" || total < 1) return null;
+
+  const hash = window.location.hash.replace(/^#/, "");
+  const hashSlide = new URLSearchParams(hash).get(SLIDE_HASH_PARAM);
+  const searchSlide = new URLSearchParams(window.location.search).get(SLIDE_HASH_PARAM);
+  const rawSlide = hashSlide || searchSlide;
+
+  if (!rawSlide) return null;
+
+  const slideNumber = Number.parseInt(rawSlide, 10);
+  if (!Number.isInteger(slideNumber) || slideNumber < 1) return null;
+
+  return Math.min(slideNumber - 1, total - 1);
+}
+
+function replaceSlideHash(index) {
+  if (typeof window === "undefined") return;
+
+  const nextUrl = `${window.location.pathname}${window.location.search}#${SLIDE_HASH_PARAM}=${index + 1}`;
+  window.history.replaceState(null, "", nextUrl);
+}
+
+function clearSlideHash() {
+  if (typeof window === "undefined") return;
+
+  window.history.replaceState(null, "", `${window.location.pathname}${window.location.search}`);
+}
 
 function resolveSlideUrl(url) {
   if (!url) return url;
@@ -30,6 +74,31 @@ function resolveSlideUrl(url) {
     return localVideoAssets[key] || url;
   }
   return url;
+}
+
+function resolveIframeUrl(url) {
+  if (!url || typeof window === "undefined") return url;
+
+  try {
+    const parsed = new URL(url);
+    if (parsed.origin === CROWD_APP_ORIGIN && !isLocalHost(window.location.hostname)) {
+      return `${parsed.pathname}${parsed.search}${parsed.hash}`;
+    }
+  } catch (err) {
+    return url;
+  }
+
+  return url;
+}
+
+function isCrowdAppUrl(url) {
+  if (!url) return false;
+
+  try {
+    return new URL(url).origin === CROWD_APP_ORIGIN;
+  } catch (err) {
+    return false;
+  }
 }
 
 /**
@@ -409,7 +478,10 @@ function SlideContent({ slide, animKey }) {
     );
   }
 
-  const resolvedUrl = resolveSlideUrl(slide.url);
+  const resolvedUrl = slide.type === "iframe"
+    ? resolveIframeUrl(resolveSlideUrl(slide.url))
+    : resolveSlideUrl(slide.url);
+  const isCrowdApp = slide.type === "iframe" && isCrowdAppUrl(slide.url);
 
   if (slide.type === "image") {
     return (
@@ -442,7 +514,8 @@ function SlideContent({ slide, animKey }) {
       src={resolvedUrl}
       title={slide.title || "slide"}
       allowFullScreen
-      sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-presentation"
+      allow="autoplay; camera; clipboard-write; fullscreen; geolocation; microphone; payment"
+      sandbox={isCrowdApp ? undefined : "allow-scripts allow-same-origin allow-forms allow-popups allow-presentation"}
     />
   );
 }
@@ -451,8 +524,10 @@ export default function Presentation({ slides = [], slideCount }) {
   const visibleSlides = slides.slice(0, slideCount ?? slides.length);
   const total = visibleSlides.length;
 
-  const [started, setStarted] = useState(false);
-  const [current, setCurrent] = useState(0);
+  const initialSlideFromLocation = getSlideIndexFromLocation(total);
+
+  const [started, setStarted] = useState(initialSlideFromLocation !== null);
+  const [current, setCurrent] = useState(initialSlideFromLocation ?? 0);
   const [animKey, setAnimKey] = useState(0);
   const [, setShowUI] = useState(true);
   const uiTimerRef = useRef(null);
@@ -486,6 +561,18 @@ export default function Presentation({ slides = [], slideCount }) {
       }
     }
   }, []);
+
+  const startPresentation = useCallback(() => {
+    setStarted(true);
+    replaceSlideHash(current);
+    enterFullscreen();
+  }, [current, enterFullscreen]);
+
+  const stopPresentation = useCallback(() => {
+    setStarted(false);
+    clearSlideHash();
+    exitFullscreen();
+  }, [exitFullscreen]);
 
   useEffect(() => {
     if (started) {
@@ -541,6 +628,33 @@ export default function Presentation({ slides = [], slideCount }) {
   }, [navigate, resetUITimer]);
 
   useEffect(() => {
+    if (!started || total === 0) return;
+
+    replaceSlideHash(current);
+  }, [started, current, total]);
+
+  useEffect(() => {
+    if (total === 0) return;
+
+    const handleHashChange = () => {
+      const nextSlide = getSlideIndexFromLocation(total);
+      if (nextSlide === null) return;
+
+      setStarted(true);
+      setCurrent((prev) => {
+        if (prev !== nextSlide) {
+          setAnimKey((k) => k + 1);
+          return nextSlide;
+        }
+        return prev;
+      });
+    };
+
+    window.addEventListener("hashchange", handleHashChange);
+    return () => window.removeEventListener("hashchange", handleHashChange);
+  }, [total]);
+
+  useEffect(() => {
     if (!started) {
       setShowUI(true);
       if (uiTimerRef.current) {
@@ -561,7 +675,7 @@ export default function Presentation({ slides = [], slideCount }) {
       // navigation
       if (e.key === "ArrowRight" || e.key === "ArrowDown") return navigate(1);
       if (e.key === "ArrowLeft"  || e.key === "ArrowUp")   return navigate(-1);
-      if (e.key === "Escape") return setStarted(false);
+      if (e.key === "Escape") return stopPresentation();
 
       // toggle play/pause for video slides on Space
       if (e.code === "Space" || e.key === " ") {
@@ -588,7 +702,7 @@ export default function Presentation({ slides = [], slideCount }) {
       window.removeEventListener("keydown", handler);
       window.removeEventListener("mousemove", mouseMoveHandler);
     };
-  }, [started, navigate, resetUITimer]);
+  }, [started, navigate, resetUITimer, stopPresentation]);
 
   // Auto-play video when its slide becomes active (muted to satisfy autoplay policies)
   useEffect(() => {
@@ -665,10 +779,7 @@ export default function Presentation({ slides = [], slideCount }) {
 
               <button
                 className="pres-start-btn"
-                onClick={() => {
-                  setStarted(true);
-                  enterFullscreen();
-                }}
+                onClick={startPresentation}
                 disabled={hasError}
               >
                 ▶ &nbsp;begin presentation
@@ -717,10 +828,7 @@ export default function Presentation({ slides = [], slideCount }) {
             <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
               <button
                 className="pres-exit-btn"
-                onClick={() => {
-                  setStarted(false);
-                  exitFullscreen();
-                }}
+                onClick={stopPresentation}
               >
                 ✕ exit
               </button>

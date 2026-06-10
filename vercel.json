@@ -1,0 +1,60 @@
+{
+  "rewrites": [
+    {
+      "source": "/report",
+      "destination": "https://crowd.airesqclimsols.com/report"
+    },
+    {
+      "source": "/about",
+      "destination": "https://crowd.airesqclimsols.com/about"
+    },
+    {
+      "source": "/volunteer",
+      "destination": "https://crowd.airesqclimsols.com/volunteer"
+    },
+    {
+      "source": "/admin",
+      "destination": "https://crowd.airesqclimsols.com/admin"
+    },
+    {
+      "source": "/:locale(en|hn|bn|ta|te|mr|gu|kn|ml|pa|od|as|mt|ur|bd|dg|km|kk|mp|np|st|sd|sk)/:path*",
+      "destination": "https://crowd.airesqclimsols.com/:locale/:path*"
+    },
+    {
+      "source": "/api/:path*",
+      "destination": "https://crowd.airesqclimsols.com/api/:path*"
+    },
+    {
+      "source": "/static/portal.css",
+      "destination": "https://crowd.airesqclimsols.com/static/portal.css"
+    },
+    {
+      "source": "/static/portal.js",
+      "destination": "https://crowd.airesqclimsols.com/static/portal.js"
+    },
+    {
+      "source": "/static/report.js",
+      "destination": "https://crowd.airesqclimsols.com/static/report.js"
+    },
+    {
+      "source": "/static/carsvg.svg",
+      "destination": "https://crowd.airesqclimsols.com/static/carsvg.svg"
+    },
+    {
+      "source": "/static/autorickshaw.svg",
+      "destination": "https://crowd.airesqclimsols.com/static/autorickshaw.svg"
+    },
+    {
+      "source": "/static/bikesvg.svg",
+      "destination": "https://crowd.airesqclimsols.com/static/bikesvg.svg"
+    },
+    {
+      "source": "/static/bicycle.svg",
+      "destination": "https://crowd.airesqclimsols.com/static/bicycle.svg"
+    },
+    {
+      "source": "/static/person.svg",
+      "destination": "https://crowd.airesqclimsols.com/static/person.svg"
+    }
+  ]
+}
