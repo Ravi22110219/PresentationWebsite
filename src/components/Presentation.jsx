@@ -1,6 +1,9 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import startLogo from "../img/start_logo.png";
 
+const IIT_GANDHINAGAR_LOGO_URL = "https://iitgn.ac.in/cif/img/iitgn.png";
+const AIRESQ_CLIMSOLS_LOGO_URL = "https://home.airesqclimsols.com/assets/White-logo-small-DosekXhA.png";
+
 const localSlideImages = {};
 function importLocalSlideImages(r) {
   r.keys().forEach((key) => {
@@ -101,6 +104,16 @@ function isCrowdAppUrl(url) {
   }
 }
 
+function getFooterSlideLabel(slide, index) {
+  const title = slide?.title || `Slide ${index + 1}`;
+  const shortTitle = title.replace(/^Demo\s+\d+:\s*/i, "");
+
+  if (/FloodAstra/i.test(shortTitle)) return "FloodAstra";
+  if (/Citizen Reports/i.test(shortTitle)) return "Citizen Reports";
+
+  return shortTitle;
+}
+
 /**
  * Presentation Component
  *
@@ -146,7 +159,10 @@ const styles = `
     flex-direction: column;
     overflow: hidden;
     width: 100%;
-    height: 100%;
+    height: 100vh;
+    height: 100dvh;
+    min-height: 100vh;
+    min-height: 100dvh;
   }
 
   /* ── HEADER ── */
@@ -233,20 +249,85 @@ const styles = `
     min-height: 0;
     touch-action: pan-y;
   }
-  .pres-stage img {
-    max-width: 100%;
-    max-height: 100%;
+  .pres-stage > img {
+    width: 100%;
+    height: 100%;
     object-fit: contain;
     display: block;
   }
-  .pres-stage video,
-  .pres-stage iframe {
+  .pres-stage > video {
     width: 100%;
     height: 100%;
     border: none;
     background: #082026;
     display: block;
     object-fit: contain;
+  }
+  .pres-stage > iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+    background: #082026;
+    display: block;
+  }
+  .pres-logo-overlay {
+    position: absolute;
+    top: 18px;
+    z-index: 20;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 58px;
+    height: 58px;
+    padding: 1px;
+    border-radius: 50%;
+    box-shadow: 0 8px 22px rgba(0, 0, 0, 0.22);
+    pointer-events: none;
+  }
+  .pres-logo-overlay-left {
+    left: 22px;
+    background: rgba(8, 31, 38, 0.82);
+    border: 1px solid rgba(107, 195, 210, 0.22);
+  }
+  .pres-logo-overlay-right {
+    right: 22px;
+    background: rgba(8, 31, 38, 0.82);
+    border: 1px solid rgba(107, 195, 210, 0.22);
+  }
+  .pres-logo-overlay img {
+    display: block;
+    width: auto;
+    height: auto;
+    max-height: 52px;
+    max-width: 52px;
+    object-fit: contain;
+  }
+  .pres-logo-iit {
+    max-width: 52px;
+  }
+  .pres-logo-airesq {
+    max-width: 52px;
+  }
+  @media (max-width: 700px) {
+    .pres-logo-overlay {
+      top: 10px;
+      width: 44px;
+      height: 44px;
+      padding: 1px;
+    }
+    .pres-logo-overlay-left {
+      left: 10px;
+    }
+    .pres-logo-overlay-right {
+      right: 10px;
+    }
+    .pres-logo-overlay img {
+      max-height: 40px;
+      max-width: 40px;
+    }
+    .pres-logo-airesq {
+      max-width: 40px;
+    }
   }
   .pres-empty {
     font-size: 12px;
@@ -329,35 +410,88 @@ const styles = `
     transition: width 0.45s var(--ease);
   }
   .pres-nav-row {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 10px;
+  }
+  .pres-slide-tabs {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    gap: 8px;
-  }
-  .pres-dots {
-    display: flex;
     gap: 6px;
-    flex-wrap: wrap;
-    justify-content: center;
-    flex: 1;
+    min-width: 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 2px 2px 4px;
+    scrollbar-width: thin;
   }
-  .pres-dot {
-    width: 6px; height: 6px;
-    border-radius: 50%;
+  .pres-slide-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+    max-width: 176px;
+    height: 26px;
+    border-radius: 6px;
     background: var(--bg3);
     border: 0.5px solid var(--border);
+    color: var(--text2);
     cursor: pointer;
-    transition: all 0.2s var(--ease);
-    padding: 0;
+    flex: 0 0 auto;
+    padding: 0 9px;
+    transition: border-color 0.2s var(--ease), color 0.2s var(--ease), background 0.2s var(--ease);
     outline: none;
+    font-family: 'Roboto', sans-serif;
   }
-  .pres-dot:hover { background: var(--text3); border-color: var(--border-hover); }
-  .pres-dot.visited { background: var(--text3); border-color: var(--text3); }
-  .pres-dot.active {
-    background: var(--accent);
+  .pres-slide-tab:hover {
+    background: var(--accent-dim);
+    border-color: var(--border-hover);
+    color: var(--text);
+  }
+  .pres-slide-tab.active {
+    background: var(--accent-dim);
     border-color: var(--accent);
-    transform: scale(1.5);
-    box-shadow: 0 0 6px rgba(212,168,67,0.5);
+    color: var(--accent);
+  }
+  .pres-slide-tab-index {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: rgba(8, 31, 38, 0.42);
+    color: var(--text);
+    flex: 0 0 auto;
+    font-size: 9px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .pres-slide-tab.active .pres-slide-tab-index {
+    background: var(--accent);
+    color: #082026;
+  }
+  .pres-slide-tab-label {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 10px;
+    letter-spacing: 0.02em;
+  }
+  @media (max-width: 760px) {
+    .pres-nav-row {
+      grid-template-columns: 1fr auto;
+      gap: 8px;
+    }
+    .pres-slide-tabs {
+      grid-column: 1 / -1;
+      order: 3;
+    }
+    .pres-slide-tab {
+      max-width: 132px;
+      height: 24px;
+      padding: 0 7px;
+    }
   }
   .pres-nav-btn {
     background: transparent;
@@ -383,6 +517,7 @@ const styles = `
   .pres-setup {
     background: var(--bg0);
     height: 100vh;
+    height: 100dvh;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -803,6 +938,12 @@ export default function Presentation({ slides = [], slideCount }) {
       <div className="pres-root">
 
         {/* header removed; exit and counter moved into footer */}
+        <div className="pres-logo-overlay pres-logo-overlay-left" aria-hidden="true">
+          <img className="pres-logo-iit" src={IIT_GANDHINAGAR_LOGO_URL} alt="" />
+        </div>
+        <div className="pres-logo-overlay pres-logo-overlay-right" aria-hidden="true">
+          <img className="pres-logo-airesq" src={AIRESQ_CLIMSOLS_LOGO_URL} alt="" />
+        </div>
 
         {/* Stage */}
         <div
@@ -844,18 +985,21 @@ export default function Presentation({ slides = [], slideCount }) {
               <span className="pres-counter" style={{ marginLeft: 8 }}>{current + 1} / {total}</span>
             </div>
 
-            <div className="pres-dots">
-              {visibleSlides.map((_, i) => (
+            <div className="pres-slide-tabs" aria-label="slide navigation">
+              {visibleSlides.map((slideItem, i) => (
                 <button
                   key={i}
                   className={[
-                    "pres-dot",
+                    "pres-slide-tab",
                     i === current ? "active" : "",
-                    i < current ? "visited" : "",
                   ].join(" ")}
                   onClick={() => goTo(i)}
-                  aria-label={`go to slide ${i + 1}`}
-                />
+                  title={`${i + 1}. ${slideItem.title || "Slide"}`}
+                  aria-label={`go to slide ${i + 1}: ${slideItem.title || "Slide"}`}
+                >
+                  <span className="pres-slide-tab-index">{i + 1}</span>
+                  <span className="pres-slide-tab-label">{getFooterSlideLabel(slideItem, i)}</span>
+                </button>
               ))}
             </div>
 
