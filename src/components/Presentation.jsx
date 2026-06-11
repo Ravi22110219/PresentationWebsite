@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import startLogo from "../img/start_logo.png";
 
 const IIT_GANDHINAGAR_LOGO_URL = "https://iitgn.ac.in/cif/img/iitgn.png";
-const AIRESQ_CLIMSOLS_LOGO_URL = "https://home.airesqclimsols.com/assets/White-logo-small-DosekXhA.png";
+const AIRESQ_CLIMSOLS_LOGO_URL = "https://vijayawada.airesqclimsols.com/assets/branding/floodresq.png";
 
 const localSlideImages = {};
 function importLocalSlideImages(r) {
