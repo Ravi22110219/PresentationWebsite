@@ -31,15 +31,10 @@ try {
 }
 
 const CROWD_APP_ORIGIN = "https://crowd.airesqclimsols.com";
-const LULC_APP_ORIGIN = "https://geoseg.airesqclimsols.com";
 const SLIDE_HASH_PARAM = "slide";
 
 function isLocalHost(hostname) {
   return hostname === "localhost" || hostname === "127.0.0.1" || hostname === "";
-}
-
-function shouldUseIframeProxy(hostname) {
-  return !isLocalHost(hostname) || process.env.NODE_ENV === "development";
 }
 
 function getSlideIndexFromLocation(total) {
@@ -92,10 +87,6 @@ function resolveIframeUrl(url) {
     if (parsed.origin === CROWD_APP_ORIGIN && !isLocalHost(window.location.hostname)) {
       return `${parsed.pathname}${parsed.search}${parsed.hash}`;
     }
-    if (parsed.origin === LULC_APP_ORIGIN && shouldUseIframeProxy(window.location.hostname)) {
-      const pathname = parsed.pathname === "/" ? "/maps" : parsed.pathname;
-      return `${pathname}${parsed.search}${parsed.hash}`;
-    }
   } catch (err) {
     return url;
   }
@@ -108,7 +99,7 @@ function isTrustedAppUrl(url) {
 
   try {
     const origin = new URL(url).origin;
-    return origin === CROWD_APP_ORIGIN || origin === LULC_APP_ORIGIN;
+    return origin === CROWD_APP_ORIGIN;
   } catch (err) {
     return false;
   }
