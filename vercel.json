@@ -45,12 +45,8 @@
       "destination": "https://geoseg.airesqclimsols.com/src/:path*"
     },
     {
-      "source": "/node_modules/:path*",
-      "destination": "https://geoseg.airesqclimsols.com/node_modules/:path*"
-    },
-    {
-      "source": "/@vite/client",
-      "destination": "/vite-client-stub.js"
+      "source": "/node_modules/.vite/:path*",
+      "destination": "https://geoseg.airesqclimsols.com/node_modules/.vite/:path*"
     },
     {
       "source": "/@vite/:path*",

@@ -3,7 +3,7 @@
   { "title": "Problem", "type": "image",  "url": "img/ARC/Problem.png" },
   { "title": "R2R", "type": "image",  "url": "img/ARC/2.png" },
   { "title": "Input", "type": "image",  "url": "img/ARC/3.png" },
-  { "title": "LULC", "type": "iframe",  "url": "https://geoseg.airesqclimsols.com/" },
+  { "title": "LULC", "type": "image",  "url": "img/ARC/4.png" },
   { "title": "Output", "type": "image",  "url": "img/ARC/5.png" },
   { "title": "Researcher", "type": "image",  "url": "img/ARC/5.5.png" },
   { "title": "Demo 1: Gurugram", "type": "image",  "url": "img/ARC/6.png" },
