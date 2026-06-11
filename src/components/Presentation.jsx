@@ -293,10 +293,11 @@ const styles = `
     right: 22px;
     width: 132px;
     height: 48px;
-    padding: 1px;
+    padding: 0;
     border-radius: 1px;
-    background: rgba(8, 31, 38, 0.82);
-    border: 1px solid rgba(107, 195, 210, 0.22);
+    background: transparent;
+    border: 1px solid rgba(8, 31, 38, 0.78);
+    box-shadow: none;
   }
   .pres-logo-overlay img {
     display: block;
@@ -310,8 +311,11 @@ const styles = `
     max-width: 52px;
   }
   .pres-logo-airesq {
-    max-width: 128px;
-    max-height: 44px;
+    width: 100%;
+    height: 100%;
+    max-width: none;
+    max-height: none;
+    object-fit: contain;
   }
   @media (max-width: 700px) {
     .pres-logo-overlay {
@@ -327,7 +331,7 @@ const styles = `
       right: 10px;
       width: 96px;
       height: 36px;
-      padding: 1px;
+      padding: 0;
       border-radius: 1px;
     }
     .pres-logo-overlay img {
@@ -335,8 +339,10 @@ const styles = `
       max-width: 40px;
     }
     .pres-logo-airesq {
-      max-width: 92px;
-      max-height: 32px;
+      width: 100%;
+      height: 100%;
+      max-width: none;
+      max-height: none;
     }
   }
   .pres-empty {
