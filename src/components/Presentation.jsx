@@ -291,12 +291,12 @@ const styles = `
   }
   .pres-logo-overlay-right {
     right: 22px;
-    width: 132px;
-    height: 48px;
+    width: auto;
+    height: auto;
     padding: 0;
-    border-radius: 1px;
     background: transparent;
-    border: 1px solid rgba(8, 31, 38, 0.78);
+    border: none;
+    border-radius: 0;
     box-shadow: none;
   }
   .pres-logo-overlay img {
@@ -311,10 +311,11 @@ const styles = `
     max-width: 52px;
   }
   .pres-logo-airesq {
-    width: 100%;
-    height: 100%;
-    max-width: none;
+    width: auto;
+    height: 48px;
+    max-width: 132px;
     max-height: none;
+    border: 1px solid rgba(8, 31, 38, 0.78);
     object-fit: contain;
   }
   @media (max-width: 700px) {
@@ -329,19 +330,18 @@ const styles = `
     }
     .pres-logo-overlay-right {
       right: 10px;
-      width: 96px;
-      height: 36px;
+      width: auto;
+      height: auto;
       padding: 0;
-      border-radius: 1px;
     }
     .pres-logo-overlay img {
       max-height: 40px;
       max-width: 40px;
     }
     .pres-logo-airesq {
-      width: 100%;
-      height: 100%;
-      max-width: none;
+      width: auto;
+      height: 36px;
+      max-width: 96px;
       max-height: none;
     }
   }
