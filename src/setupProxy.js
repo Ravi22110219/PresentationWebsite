@@ -12,6 +12,7 @@ const lulcRoutes = [
   "/api/v1",
   "/src",
   "/node_modules/.vite",
+  "/node_modules/vite",
   "/@vite",
   "/@react-refresh",
 ];

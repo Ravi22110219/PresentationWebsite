@@ -49,6 +49,10 @@
       "destination": "https://geoseg.airesqclimsols.com/node_modules/.vite/:path*"
     },
     {
+      "source": "/node_modules/vite/:path*",
+      "destination": "https://geoseg.airesqclimsols.com/node_modules/vite/:path*"
+    },
+    {
       "source": "/@vite/:path*",
       "destination": "https://geoseg.airesqclimsols.com/@vite/:path*"
     },
