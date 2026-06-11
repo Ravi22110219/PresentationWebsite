@@ -315,7 +315,7 @@ const styles = `
     height: 48px;
     max-width: 132px;
     max-height: none;
-    border: 1px solid rgba(8, 31, 38, 0.78);
+    border: 3px solid rgba(8, 31, 38, 0.69);
     object-fit: contain;
   }
   @media (max-width: 700px) {
