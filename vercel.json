@@ -1,6 +1,62 @@
 {
   "rewrites": [
     {
+      "source": "/login",
+      "destination": "https://geoseg.airesqclimsols.com/login"
+    },
+    {
+      "source": "/signup",
+      "destination": "https://geoseg.airesqclimsols.com/signup"
+    },
+    {
+      "source": "/maps",
+      "destination": "https://geoseg.airesqclimsols.com/maps"
+    },
+    {
+      "source": "/maps/:path*",
+      "destination": "https://geoseg.airesqclimsols.com/maps/:path*"
+    },
+    {
+      "source": "/jobs",
+      "destination": "https://geoseg.airesqclimsols.com/jobs"
+    },
+    {
+      "source": "/jobs/:path*",
+      "destination": "https://geoseg.airesqclimsols.com/jobs/:path*"
+    },
+    {
+      "source": "/results/:path*",
+      "destination": "https://geoseg.airesqclimsols.com/results/:path*"
+    },
+    {
+      "source": "/terrain",
+      "destination": "https://geoseg.airesqclimsols.com/terrain"
+    },
+    {
+      "source": "/terrain/:path*",
+      "destination": "https://geoseg.airesqclimsols.com/terrain/:path*"
+    },
+    {
+      "source": "/api/v1/:path*",
+      "destination": "https://geoseg.airesqclimsols.com/api/v1/:path*"
+    },
+    {
+      "source": "/src/:path*",
+      "destination": "https://geoseg.airesqclimsols.com/src/:path*"
+    },
+    {
+      "source": "/node_modules/.vite/:path*",
+      "destination": "https://geoseg.airesqclimsols.com/node_modules/.vite/:path*"
+    },
+    {
+      "source": "/@vite/:path*",
+      "destination": "https://geoseg.airesqclimsols.com/@vite/:path*"
+    },
+    {
+      "source": "/@react-refresh",
+      "destination": "https://geoseg.airesqclimsols.com/@react-refresh"
+    },
+    {
       "source": "/report",
       "destination": "https://crowd.airesqclimsols.com/report"
     },

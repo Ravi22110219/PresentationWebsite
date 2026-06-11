@@ -31,10 +31,15 @@ try {
 }
 
 const CROWD_APP_ORIGIN = "https://crowd.airesqclimsols.com";
+const LULC_APP_ORIGIN = "https://geoseg.airesqclimsols.com";
 const SLIDE_HASH_PARAM = "slide";
 
 function isLocalHost(hostname) {
   return hostname === "localhost" || hostname === "127.0.0.1" || hostname === "";
+}
+
+function shouldUseIframeProxy(hostname) {
+  return !isLocalHost(hostname) || process.env.NODE_ENV === "development";
 }
 
 function getSlideIndexFromLocation(total) {
@@ -87,6 +92,10 @@ function resolveIframeUrl(url) {
     if (parsed.origin === CROWD_APP_ORIGIN && !isLocalHost(window.location.hostname)) {
       return `${parsed.pathname}${parsed.search}${parsed.hash}`;
     }
+    if (parsed.origin === LULC_APP_ORIGIN && shouldUseIframeProxy(window.location.hostname)) {
+      const pathname = parsed.pathname === "/" ? "/maps" : parsed.pathname;
+      return `${pathname}${parsed.search}${parsed.hash}`;
+    }
   } catch (err) {
     return url;
   }
@@ -94,11 +103,12 @@ function resolveIframeUrl(url) {
   return url;
 }
 
-function isCrowdAppUrl(url) {
+function isTrustedAppUrl(url) {
   if (!url) return false;
 
   try {
-    return new URL(url).origin === CROWD_APP_ORIGIN;
+    const origin = new URL(url).origin;
+    return origin === CROWD_APP_ORIGIN || origin === LULC_APP_ORIGIN;
   } catch (err) {
     return false;
   }
@@ -632,7 +642,7 @@ function SlideContent({ slide, animKey }) {
   const resolvedUrl = slide.type === "iframe"
     ? resolveIframeUrl(resolveSlideUrl(slide.url))
     : resolveSlideUrl(slide.url);
-  const isCrowdApp = slide.type === "iframe" && isCrowdAppUrl(slide.url);
+  const isTrustedApp = slide.type === "iframe" && isTrustedAppUrl(slide.url);
 
   if (slide.type === "image") {
     return (
@@ -666,7 +676,7 @@ function SlideContent({ slide, animKey }) {
       title={slide.title || "slide"}
       allowFullScreen
       allow="autoplay; camera; clipboard-write; fullscreen; geolocation; microphone; payment"
-      sandbox={isCrowdApp ? undefined : "allow-scripts allow-same-origin allow-forms allow-popups allow-presentation"}
+      sandbox={isTrustedApp ? undefined : "allow-scripts allow-same-origin allow-forms allow-popups allow-presentation"}
     />
   );
 }
