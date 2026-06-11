@@ -674,7 +674,6 @@ function SlideContent({ slide, animKey }) {
       className="slide-enter"
       src={resolvedUrl}
       title={slide.title || "slide"}
-      allowFullScreen
       allow="autoplay; camera; clipboard-write; fullscreen; geolocation; microphone; payment"
       sandbox={isTrustedApp ? undefined : "allow-scripts allow-same-origin allow-forms allow-popups allow-presentation"}
     />
@@ -734,14 +733,6 @@ export default function Presentation({ slides = [], slideCount }) {
     clearSlideHash();
     exitFullscreen();
   }, [exitFullscreen]);
-
-  useEffect(() => {
-    if (started) {
-      enterFullscreen();
-    } else {
-      exitFullscreen();
-    }
-  }, [started, enterFullscreen, exitFullscreen]);
 
   const goTo = useCallback((i) => {
     if (i < 0 || i >= total) return;
