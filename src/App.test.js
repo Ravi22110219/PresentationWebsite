@@ -18,7 +18,7 @@ test('restores the current slide from a one-based URL hash', () => {
   render(<App />);
 
   expect(screen.getByTitle('Demo 1: Gurugram - FloodAstra')).toBeInTheDocument();
-  expect(screen.getByText('9 / 19')).toBeInTheDocument();
+  expect(screen.getByText('9 / 20')).toBeInTheDocument();
 });
 
 test('writes the current slide to the URL hash while presenting', async () => {
