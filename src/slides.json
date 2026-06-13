@@ -10,6 +10,7 @@
   { "title": "Demo 1: Gurugram - FloodAstra", "type": "iframe",  "url": "https://gurugram.airesqclimsols.com/MCG_Flood_DSS_FINAL_WORKING.html#overview" },
   { "title": "Demo 2: Vijaywada", "type": "iframe",  "url": "https://vijayawada.airesqclimsols.com/map_dashboard.html" },
   { "title": "Demo 3: Citizen Reports, Sensors", "type": "iframe",  "url": "https://crowd.airesqclimsols.com/report" },
+  { "title": "Dam Demo", "type": "iframe",  "url": "https://dam.airesqclimsols.com/" },
   { "title": "Demo 4: Cricket", "type": "video",  "url": "video/AIPLaY_Cricket_Time_to_Play_Animation.mp4" },
   { "title": "Demo 5: Tennis", "type": "video",  "url": "video/AIPlay-3.mp4" },
   { "title": "Demo 6: MobiResQ", "type": "iframe",  "url": "https://mobility.airesqclimsols.com/" },
